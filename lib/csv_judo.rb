@@ -1,9 +1,23 @@
 require 'csv'
 
+class TimeDuration
+  attr_accessor :duration
+  def initialize(time_options={})
+    options = {:duration_obj=>DateTime.strptime("00:00:00","%H:%M:%S")}
+    options.merge!(time_options)
+    @duration = options[:duration_obj]
+  end
+  def duration_in_seconds
+    @duration.hour*3600+@duration.min*60+@duration.sec
+  end
+end
+
 module CSVJudo
-  def read_in_csv(file_name)
+  def read_in_csv(file_name,arg_options={})
+    options={:headers=>true}
+    options.merge!(arg_options)
     csv_arr = Array.new
-    CSV.foreach(file_name) do |row|
+    CSV.foreach(file_name,options) do |row|
       csv_arr<<row
     end
     csv_arr
@@ -23,25 +37,16 @@ module CSVJudo
     return match_arr
   end
   def fetch_rows_by_duration(csv_arr,arg_options={})
-    #duration_search: 1: >= start_duration, 0: >=start_duration & <=end_duration, -1: <=end_duration
-    options = {start_duration: DateTime.strptime("00:00:30","%H:%M:%S"), end_duration: DateTime.strptime("00:01:00","%H:%M:%S"), column: 9, duration_search: 1}
+    #duration_column: column where the date/time information in the call sheet that is being compared against the start and end time durations
+    @start_time_duration = arg_options[:start_time_duration]||TimeDuration.new({:duration_obj=>DateTime.strptime("00:00:00","%H:%M:%S")})
+    @end_time_duration = arg_options[:end_time_duration]||TimeDuration.new({:duration_obj=>DateTime.strptime("00:10:00","%H:%M:%S")})
+    options = {start_time_duration: @start_time_duration, end_time_duration: @end_time_duration, duration_column: 9}
     options.merge!(arg_options)
     match_arr = Array.new
     csv_arr.each do |row|
-      check_dur = DateTime.strptime(row[options[:column]],"%H:%M:%S")
-      case options[:duration_search]
-      when -1
-        if (check_dur<=options[:end_duration])
-          match_arr << row
-        end
-      when 0
-        if (check_dur>=options[:start_duration]&&check_dur<=options[:end_duration])
-          match_arr << row
-        end
-      when 1
-        if (check_dur>=options[:start_duration])
-          match_arr<<row
-        end
+      check_dur = TimeDuration.new({:duration_obj=>DateTime.strptime(row[options[:duration_column]],"%H:%M:%S")})
+      if check_dur.duration>=options[:start_time_duration].duration&&check_dur.duration<=options[:end_time_duration].duration
+        match_arr<<row
       end
     end
     return match_arr
