@@ -21,10 +21,10 @@ class ReportGenerator
 end
 
 repg = ReportGenerator.new
-repg.date_arr = ["2013-7-21","2013-7-27"]
+repg.date_arr = ["2013-7-21","2013-7-30"]
 repg.file_name_arr = Dir['*cloudsharklabs*.csv']
 s_dur = TimeDuration.new({duration_obj: DateTime.strptime("00:00:00","%H:%M:%S")})
-e_dur = TimeDuration.new({duration_obj: DateTime.strptime("00:10:00","%H:%M:%S")})
+e_dur = TimeDuration.new({duration_obj: DateTime.strptime("00:00:20","%H:%M:%S")})
 repg.duration_arr = [s_dur,e_dur]
 repg.report_generator
 
