@@ -27,11 +27,11 @@ module CSVJudo
     options.merge!(arg_options)
     start_dt=DateTime.parse(options[:start_date])
     end_dt=DateTime.parse(options[:end_date])
-    match_arr = csv_arr.collect do |row|
+    match_arr = csv_arr.select do |row|
       check_dt = DateTime.parse(row[options[:column]])
       row if (check_dt>=start_dt&&check_dt<=end_dt)
     end
-    match_arr.delete_if { |x| x.nil? }
+    match_arr
   end
   def fetch_rows_by_duration(csv_arr,arg_options={})
     #duration_column: column where the date/time information in the call sheet that is being compared against the start and end time durations
@@ -39,10 +39,10 @@ module CSVJudo
     @end_time_duration = arg_options[:end_time_duration]||TimeDuration.new({:duration_obj=>DateTime.strptime("00:10:00","%H:%M:%S")})
     options = {start_time_duration: @start_time_duration, end_time_duration: @end_time_duration, duration_column: 9}
     options.merge!(arg_options)
-    match_arr = csv_arr.collect do |row|
+    match_arr = csv_arr.select do |row|
       check_dur = TimeDuration.new({:duration_obj=>DateTime.strptime(row[options[:duration_column]],"%H:%M:%S")})
       row if check_dur.duration>=options[:start_time_duration].duration&&check_dur.duration<=options[:end_time_duration].duration
     end
-    match_arr.delete_if { |x| x.nil? }
+    match_arr
   end
 end
